@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="zh-CN">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+		<link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css" />
+		<title>实时定位跟踪</title>
+	</head>
+
+	<body>
+		<div id="container" class="container"></div>
+		<div class="button-group">
+			<input type="button" class="button" id="trackOne" value="跟踪" />
+		</div>
+
+		<script type="text/javascript" src='//webapi.amap.com/maps?v=1.3&key=您申请的key值'></script>
+		<!-- UI组件库 1.0 -->
+		<script src="//webapi.amap.com/ui/1.0/main.js"></script>
+		<script src="js/jquery.js"></script>
+
+		<script type="text/javascript">
+			var map = new AMap.Map('container', {
+				resizeEnable: true,
+				zoom: 10
+			});
+
+			var marker = null;
+			var speed = 0;
+			var last_lng=123.41811, last_lat=41.923593;
+			
+
+			AMap.event.addDomListener(document.getElementById('trackOne'), 'click', function() {
+				map.clearMap();
+
+				// 设置缩放级别和中心点
+				map.setZoomAndCenter(12, [last_lng,last_lat]);
+
+				// 在新中心点添加 marker 
+				marker = new AMap.Marker({
+					map: map,
+					icon: new AMap.Icon({
+						size: new AMap.Size(50, 50), //图标尺寸，默认值(36,36)
+						image: 'http://webapi.amap.com/images/car.png',
+						offset: new AMap.Pixel(-26, -13),
+						imageOffset: new AMap.Pixel(0, 18), //图标取图偏移量。当image中指定了一个大图时，可通过size和imageOffset配合，显示图标的指定范围
+					}),
+					autoRotation: true,
+				});
+
+
+				//每隔一秒查询一次实时位置
+				//				setInterval('markerMove1()', 10000);
+				markerMove0();
+				setTimeout('markerMove1()', 5000);
+				setTimeout('markerMove2()', 10000);
+
+			});
+			
+			var pointList ,lineArr;
+			
+			function markerMove0() {
+				speed = 20;
+				pointList = [{
+					lng: 123.41811,
+					lat: 41.923593
+				},
+
+				{
+					lng: 123.532093,
+					lat: 41.897022
+				},
+				{
+					lng: 123.505314,
+					lat: 41.824916
+				},
+				{
+					lng: 123.414676,
+					lat: 41.834125
+				}
+			];
+				lineArr = new Array();
+
+				for(var i = 1; i < pointList.length; i++) {
+					lineArr.push(new AMap.LngLat(pointList[i].lng, pointList[i].lat));
+				}
+
+				//此处应该根据当前位置和上一次的位置是否有变化，来决定marker的移动。
+				if(1 == 1) {
+					var polyline_red = new AMap.Polyline({
+						// path:lineArr,  
+						strokeColor: "#FF3030", //线颜色  
+						strokeOpacity: 0.8, //线透明度  
+						strokeWeight: 6, //线宽  
+						showDir: true,
+						lineJoin: 'round',
+						strokeStyle: "solid", //线样式  
+					});
+
+					map.add(polyline_red);
+
+					var polyline_yellow = new AMap.Polyline({
+						// path:lineArr,  
+						strokeColor: "#FFD700", //线颜色  
+						strokeOpacity: 0.8, //线透明度  
+						strokeWeight: 6, //线宽  
+						showDir: true,
+						lineJoin: 'round',
+						strokeStyle: "solid", //线样式  
+					});
+
+					map.add(polyline_yellow);
+					var polyline_green = new AMap.Polyline({
+						// path:lineArr,  
+						strokeColor: "#76EE00", //线颜色  
+						strokeOpacity: 0.8, //线透明度  
+						strokeWeight: 6, //线宽  
+						showDir: true,
+						lineJoin: 'round',
+						strokeStyle: "solid", //线样式  
+					});
+
+					map.add(polyline_green);
+					AMap.event.addListener(marker, 'moving', function(e) {
+						if(speed < 60) {
+							polyline_green.setPath(e.passedPath);
+						} else if(speed <= 100 && speed >= 60) {
+							polyline_yellow.setPath(e.passedPath);
+						} else {
+							polyline_red.setPath(e.passedPath);
+						}
+					});
+					marker.moveAlong(lineArr, 50000, function(k) {
+						return k;
+					});
+				}
+
+			}
+			
+
+			function markerMove1() {
+				speed = 80;
+				pointList = [{
+						lng: 123.414676,
+						lat: 41.834125
+					},
+					{
+						lng: 123.414776,
+						lat: 41.834225
+					},
+
+					{
+						lng: 123.414876,
+						lat: 41.843125
+					},
+					{
+						lng: 123.414876,
+						lat: 41.883125
+					}
+				];
+				lineArr = new Array();
+
+				for(var i = 1; i < pointList.length; i++) {
+					lineArr.push(new AMap.LngLat(pointList[i].lng, pointList[i].lat));
+				}
+
+				//此处应该根据当前位置和上一次的位置是否有变化，来决定marker的移动。
+				if(1 == 1) {
+					var polyline_red = new AMap.Polyline({
+						// path:lineArr,  
+						strokeColor: "#FF3030", //线颜色  
+						strokeOpacity: 0.8, //线透明度  
+						strokeWeight: 6, //线宽  
+						showDir: true,
+						lineJoin: 'round',
+						strokeStyle: "solid", //线样式  
+					});
+
+					map.add(polyline_red);
+
+					var polyline_yellow = new AMap.Polyline({
+						// path:lineArr,  
+						strokeColor: "#FFD700", //线颜色  
+						strokeOpacity: 0.8, //线透明度  
+						strokeWeight: 6, //线宽  
+						showDir: true,
+						lineJoin: 'round',
+						strokeStyle: "solid", //线样式  
+					});
+
+					map.add(polyline_yellow);
+					var polyline_green = new AMap.Polyline({
+						// path:lineArr,  
+						strokeColor: "#76EE00", //线颜色  
+						strokeOpacity: 0.8, //线透明度  
+						strokeWeight: 6, //线宽  
+						showDir: true,
+						lineJoin: 'round',
+						strokeStyle: "solid", //线样式  
+					});
+
+					map.add(polyline_green);
+					AMap.event.addListener(marker, 'moving', function(e) {
+						if(speed < 60) {
+							polyline_green.setPath(e.passedPath);
+						} else if(speed <= 100 && speed >= 60) {
+							polyline_yellow.setPath(e.passedPath);
+						} else {
+							polyline_red.setPath(e.passedPath);
+						}
+					});
+					marker.moveAlong(lineArr, 50000, function(k) {
+						return k;
+					});
+				}
+
+			}
+
+			function markerMove2() {
+				speed = 80;
+				pointList = [{
+						lng: 123.414876,
+						lat: 41.883125
+					},
+					{
+						lng: 123.414876,
+						lat: 41.884125
+					},
+
+					{
+						lng: 123.414876,
+						lat: 41.885125
+					},
+					{
+						lng: 123.414876,
+						lat: 41.886125
+					}
+				];
+				lineArr = new Array();
+
+				for(var i = 1; i < pointList.length; i++) {
+					lineArr.push(new AMap.LngLat(pointList[i].lng, pointList[i].lat));
+				}
+
+				//此处应该根据当前位置和上一次的位置是否有变化，来决定marker的移动。
+				if(1 == 1) {
+					var polyline_red = new AMap.Polyline({
+						// path:lineArr,  
+						strokeColor: "#FF3030", //线颜色  
+						strokeOpacity: 0.8, //线透明度  
+						strokeWeight: 6, //线宽  
+						showDir: true,
+						lineJoin: 'round',
+						strokeStyle: "solid", //线样式  
+					});
+
+					map.add(polyline_red);
+
+					var polyline_yellow = new AMap.Polyline({
+						// path:lineArr,  
+						strokeColor: "#FFD700", //线颜色  
+						strokeOpacity: 0.8, //线透明度  
+						strokeWeight: 6, //线宽  
+						showDir: true,
+						lineJoin: 'round',
+						strokeStyle: "solid", //线样式  
+					});
+
+					map.add(polyline_yellow);
+					var polyline_green = new AMap.Polyline({
+						// path:lineArr,  
+						strokeColor: "#76EE00", //线颜色  
+						strokeOpacity: 0.8, //线透明度  
+						strokeWeight: 6, //线宽  
+						showDir: true,
+						lineJoin: 'round',
+						strokeStyle: "solid", //线样式  
+					});
+
+					map.add(polyline_green);
+					AMap.event.addListener(marker, 'moving', function(e) {
+						if(speed < 60) {
+							polyline_green.setPath(e.passedPath);
+						} else if(speed <= 100 && speed >= 60) {
+							polyline_yellow.setPath(e.passedPath);
+						} else {
+							polyline_red.setPath(e.passedPath);
+						}
+					});
+					marker.moveAlong(lineArr, 50000, function(k) {
+						return k;
+					});
+				}
+
+			}
+		</script>
+	</body>
+
+</html>

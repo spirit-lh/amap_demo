@@ -1,0 +1,167 @@
+<!-- 重点参数：renderOptions -->
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <!-- 原始地址：//webapi.amap.com/ui/1.0/ui/misc/PathSimplifier/examples/navigators.html -->
+    <base href="//webapi.amap.com/ui/1.0/ui/misc/PathSimplifier/examples/" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>轨迹巡航控制</title>
+    <style>
+    #container {
+        width: 100%;
+        height: 100%;
+        margin: 0px;
+    }
+    
+    </style>
+</head>
+
+<body>
+    <div id="outer-box">
+        <div id="container" style="height:600px;width: 100%;vertical-align: middle;"></div> 
+<div class="button-group">
+ <input type="button" class="layui-btn layui-btn-mini layui-btn-normal" value="开始动画" id="move" style="display:none;" />
+ <input type="button" class="layui-btn layui-btn-mini layui-btn-normal" value="暂停动画" id="pause" style="display:none;"/>
+ <input type="button" class="layui-btn layui-btn-mini layui-btn-normal" value="继续动画" id="resume" style="display:none;"/>
+ <input type="button" class="layui-btn layui-btn-mini layui-btn-normal" value="停止动画" id="stop" style="display:none;" />
+</div>
+    </div>
+    <script type="text/javascript" src='//webapi.amap.com/maps?v=1.3&key=您申请的key值'></script>
+    <!-- UI组件库 1.0 -->
+    <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.10"></script>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>
+    <script type="text/javascript">
+    	
+    	var map = new AMap.Map('container', {
+		resizeEnable: true,
+		zoom: 10
+	});
+	
+	
+	
+    var postData = {};
+// postData['rsearch'] = rsearch;
+// postData['uid'] = uid;
+// postData['stime'] = stime;
+// postData['etime'] = etime;
+// postData['ajax'] = 1;
+ var url = 'http://a.amap.com/amap-ui/static/data/big-routes.json'; //接口地址
+ $.get(url,postData,function(res){
+ 	console.log(res);
+     if(res.status == 1){
+
+         console.log(res);
+         $("#container").show();
+         var lnglatArr = new Array();
+         var i = 0;
+
+         $.grep(res.data,function(re){
+             lnglatArr[i] = new AMap.LngLat(re.longitude,re.latitude);
+             i = i+1; 
+         })
+
+         AMap.convertFrom(lnglatArr, 'gps',function(status,result){
+             console.log(result); 
+
+             var marker, lineArr = [];
+ 
+             var map = new AMap.Map("container", {
+                 resizeEnable: true,
+                 center: [result.locations[0].lng, result.locations[0].lat],
+                 zoom: 13
+             });
+
+             marker = new AMap.Marker({
+                 map: map,
+                 position:[result.locations[0].lng, result.locations[0].lat],
+                 icon: "http://webapi.amap.com/images/car.png",
+                 offset: new AMap.Pixel(-26, -13),
+                 autoRotation: true
+             });
+ 
+             $.grep(result.locations,function(r){
+                 console.log(r);
+                 lineArr.push([r.lng, r.lat]);
+             })
+
+             // 绘制轨迹
+             var polyline = new AMap.Polyline({
+                 map: map,
+                 path: lineArr,
+                 strokeColor: "#00A", //线颜色
+                 //strokeOpacity: 1, //线透明度
+                 strokeWeight: 3, //线宽
+                 //strokeStyle: "solid" //线样式
+             });
+             var passedPolyline = new AMap.Polyline({
+                 map: map,
+                 //path: lineArr,
+                 strokeColor: "#F00", //线颜色
+                 //strokeOpacity: 1, //线透明度
+                 strokeWeight: 3, //线宽
+                 //strokeStyle: "solid" //线样式
+             });
+             $("#move").show();
+             $("#pause").show();
+             $("#resume").show();
+             $("#stop").show();
+
+             AMapUI.loadUI(['overlay/SimpleInfoWindow'], function(SimpleInfoWindow) {
+                 infoWindow = new SimpleInfoWindow({
+                     infoTitle: '<strong>标题</strong>',
+                     infoBody: '点击开始动画可进行播放',
+                     //基点指向marker的头部位置
+                     offset: new AMap.Pixel(0, -31)
+                 });
+                 infoWindow.open(map, marker.getPosition());
+             })
+
+             marker.on('click',function(e){
+                 infoWindow.open(map, marker.getPosition());
+             });
+
+             marker.on('moving',function(e){
+                 var len = e.passedPath.length;
+                 var rate = res.data[len-1].rate;
+                 var location = e.passedPath[len-1];
+                 var lll = new AMap.LngLat(location.lng,location.lat);
+
+                 infoWindow.setInfoBody('<div>经度：'+location.lng+'<br>纬度：'+location.lat+'<br>速度：'+rate+' km/h</div>');
+                 infoWindow.setPosition(lll);
+                 passedPolyline.setPath(e.passedPath);
+             })
+             map.setFitView();
+
+             AMap.event.addDomListener(document.getElementById('move'), 'click', function() {
+                 marker.moveAlong(lineArr, 500,function(k){
+                     return k;
+                 });
+             }, false);
+
+             AMap.event.addDomListener(document.getElementById('pause'), 'click', function() {
+                 marker.pauseMove();
+             }, false);
+             AMap.event.addDomListener(document.getElementById('resume'), 'click', function() {
+                 marker.resumeMove();
+             }, false);
+             AMap.event.addDomListener(document.getElementById('stop'), 'click', function() {
+                 marker.stopMove();
+             }, false); 
+         });
+     }else{
+         $("#container").hide();
+         $("#move").hide();
+         $("#pause").hide();
+         $("#resume").hide();
+         $("#stop").hide();
+         layui.use(['layer'], function(){
+         var layer = layui.layer;
+         layer.msg(res.msg, {icon: 2});});
+     }
+ },'json')
+    </script>
+</body>
+
+</html>
