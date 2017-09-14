@@ -19,7 +19,9 @@
 			};
 			var lineArr= new Array();
 			var data = jsonData.path;
+			var aaa=0;
 			for(var i = 1; i < data.length; i++) {
+				aaa++;
 				var re = coordtransform.wgs84togcj02(data[i][0], data[i][1]);
 //				console.log(re);	
 
@@ -29,7 +31,7 @@
 
 
 
-
+console.log('AAAA:'+aaa);
 var wgs84togcj02=coordtransform.wgs84togcj02(121.260962, 31.377683);
 console.log( "result2=" + wgs84togcj02);
 AMap.convertFrom("121.260962,31.377683", "gps", function(status, result) {
